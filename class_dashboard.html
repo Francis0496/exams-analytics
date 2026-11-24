@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Class results</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --paper: #e7eef2;
+      --ink: #1b2430;
+      --muted: #3e4c5c;
+      --line: #c5d0d8;
+      --pen: #1a4f8b;
+      --sheet: #fbfcfd;
+      --pass: #1c6b43;
+      --fail: #9d1c2a;
+      --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      --sans: "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    button, input { font: inherit; color: inherit; }
+
+    button { cursor: pointer; }
+
+    :focus-visible {
+      outline: 3px solid var(--pen);
+      outline-offset: 2px;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-family: var(--serif);
+      font-size: 2.6rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-family: var(--serif);
+      font-size: 1.45rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 42rem;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+
+    .search {
+      width: 220px;
+      background: transparent;
+      border: 0;
+      border-bottom: 2px solid var(--ink);
+      padding: 6px 0;
+    }
+
+    .status {
+      display: flex;
+      gap: 14px;
+    }
+
+    .status button,
+    .clear {
+      background: transparent;
+      border: 0;
+      padding: 6px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .status button[aria-pressed="true"] {
+      border-bottom-color: var(--pen);
+      color: var(--pen);
+    }
+
+    .clear[hidden] { display: none; }
+
+    #summary {
+      margin: 8px 0 22px;
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      line-height: 1.25;
+      max-width: 40rem;
+    }
+
+    .ladder {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      align-items: end;
+      min-height: 200px;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 36px;
+    }
+
+    .grade-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      min-height: 200px;
+      background: transparent;
+      border: 0;
+      padding: 0 0 8px;
+    }
+
+    .grade-col .count {
+      font-family: var(--serif);
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+
+    .grade-col .bar {
+      width: min(64px, 100%);
+      min-height: 4px;
+    }
+
+    .grade-col .letter {
+      font-size: 1rem;
+    }
+
+    .grade-col[aria-pressed="true"] .letter {
+      color: var(--pen);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .grade-col.is-dim { opacity: 0.38; }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.75fr);
+      gap: 36px;
+      align-items: start;
+      margin-bottom: 40px;
+    }
+
+    .mean-row {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr) 52px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .mean-track {
+      height: 22px;
+      background: #d5e0e7;
+    }
+
+    .mean-fill {
+      display: block;
+      height: 100%;
+    }
+
+    .mean-value {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      text-align: right;
+    }
+
+    .note {
+      margin: 8px 0 28px;
+      max-width: 38rem;
+      color: var(--muted);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 8px;
+    }
+
+    .tabs button {
+      background: transparent;
+      border: 0;
+      padding: 4px 0;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tabs button[aria-pressed="true"] {
+      border-bottom-color: var(--ink);
+    }
+
+    .chart {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    .chart text {
+      fill: var(--ink);
+      font-family: var(--sans);
+      font-size: 13px;
+    }
+
+    .script {
+      background: var(--sheet);
+      border-left: 6px solid var(--line);
+      min-height: 320px;
+      padding: 18px 18px 20px;
+    }
+
+    .script h2 { margin-bottom: 4px; }
+
+    .script .prompt {
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .script-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .script .who {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1.7rem;
+      line-height: 1.1;
+    }
+
+    .script .id {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .mark {
+      font-family: var(--serif);
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+
+    .lines {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .lines th,
+    .lines td {
+      text-align: left;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line);
+      font-weight: 400;
+    }
+
+    .lines td:last-child,
+    .marks td:last-child {
+      text-align: right;
+      font-family: var(--serif);
+      font-size: 1.15rem;
+    }
+
+    .script p.remark {
+      margin: 14px 0 0;
+    }
+
+    .ends {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .end {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-top: 1px solid var(--line);
+      padding: 10px 0 0;
+    }
+
+    .end strong {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .block { margin-bottom: 36px; }
+
+    #scatter { background: transparent; }
+
+    .roster-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .table-wrap {
+      max-height: 520px;
+      overflow: auto;
+      border-top: 2px solid var(--ink);
+    }
+
+    table.roster {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .roster th,
+    .roster td {
+      text-align: right;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .roster th:first-child,
+    .roster td:first-child { text-align: left; }
+
+    .roster th button {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-weight: 600;
+    }
+
+    .roster tbody tr { cursor: pointer; }
+
+    .roster tbody tr[aria-selected="true"] {
+      background: #d9e6f2;
+    }
+
+    .roster tbody tr:hover { background: #e4edf3; }
+
+    .roster tbody tr[aria-selected="true"]:hover { background: #d9e6f2; }
+
+    .empty {
+      padding: 18px 0;
+      color: var(--muted);
+    }
+
+    .tip {
+      position: fixed;
+      z-index: 5;
+      pointer-events: none;
+      background: var(--ink);
+      color: white;
+      padding: 6px 8px;
+      font-size: 14px;
+      max-width: 220px;
+      display: none;
+    }
+
+    @media (max-width: 800px) {
+      header, .stage { display: block; }
+      .controls { justify-content: flex-start; margin-top: 16px; }
+      h1 { font-size: 2.1rem; }
+      #summary { font-size: 1.35rem; }
+      .ladder { grid-template-columns: repeat(4, 1fr); border-bottom: 0; gap: 16px 8px; }
+      .grade-col { min-height: 140px; }
+      .script { margin-top: 28px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Class results</h1>
+        <p class="lede">Click a grade, then a student. The board follows what you select.</p>
+      </div>
+      <div class="controls">
+        <input class="search" id="search" type="search" placeholder="Name or ID" aria-label="Find a student by name or ID">
+        <div class="status" role="group" aria-label="Exam status">
+          <button type="button" data-status="all" aria-pressed="true">All</button>
+          <button type="button" data-status="Taken" aria-pressed="false">Sat the exam</button>
+          <button type="button" data-status="Absent" aria-pressed="false">Absent</button>
+        </div>
+        <button type="button" class="clear" id="clear" hidden>Clear filters</button>
+      </div>
+    </header>
+
+    <p id="summary" aria-live="polite"></p>
+    <div class="ladder" id="ladder" role="group" aria-label="Filter by grade"></div>
+
+    <div class="stage">
+      <div>
+        <section class="block">
+          <h2>Test 1, Test 2, and the exam</h2>
+          <div id="means"></div>
+          <p class="note" id="means-note"></p>
+        </section>
+        <section class="block">
+          <h2>Where each score sits</h2>
+          <div class="tabs" role="group" aria-label="Score to show">
+            <button type="button" data-spread="Test 1 (100)" aria-pressed="false">Test 1</button>
+            <button type="button" data-spread="Test 2 (100)" aria-pressed="false">Test 2</button>
+            <button type="button" data-spread="EXAMS" aria-pressed="false">Exam</button>
+            <button type="button" data-spread="FINAL_SCORE" aria-pressed="true">Final</button>
+          </div>
+          <p class="note" id="spread-note"></p>
+          <div id="spread"></div>
+        </section>
+      </div>
+      <aside class="script" id="script" aria-live="polite"></aside>
+    </div>
+
+    <section class="block">
+      <h2>Coursework against the exam</h2>
+      <p class="note" id="scatter-note"></p>
+      <div id="scatter"></div>
+    </section>
+
+    <section>
+      <div class="roster-head">
+        <h2>Everyone in this view</h2>
+        <p class="note" id="list-count"></p>
+      </div>
+      <div class="table-wrap">
+        <table class="roster">
+          <thead>
+            <tr>
+              <th><button type="button" data-sort="Name">Name</button></th>
+              <th><button type="button" data-sort="Test 1 (100)">Test 1</button></th>
+              <th><button type="button" data-sort="Test 2 (100)">Test 2</button></th>
+              <th><button type="button" data-sort="EXAMS">Exam</button></th>
+              <th><button type="button" data-sort="FINAL_SCORE">Final</button></th>
+              <th><button type="button" data-sort="GRADE">Grade</button></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="empty" hidden>No students match this filter. Clear the filters to see the whole class.</p>
+    </section>
+  </div>
+  <div class="tip" id="tip" role="tooltip"></div>
+  <script>
+    const STUDENTS = [{"No":1,"Name":"Fatmata Barrie","ID Number":58855,"Test 1 (100)":87,"Test 2 (100)":88,"AVERAGE":87.5,"Final CA (30%)":26.25,"EXAMS":78,"FINAL_SCORE":80.85,"GRADE":"A","Exam status":"Taken","Exam mark (taken only)":78.0,"Test 2 minus Test 1":1,"Test average minus exam":9.5},{"No":2,"Name":"Grace Kallon","ID Number":60565,"Test 1 (100)":65,"Test 2 (100)":88,"AVERAGE":76.5,"Final CA (30%)":22.95,"EXAMS":71,"FINAL_SCORE":72.65,"GRADE":"A","Exam status":"Taken","Exam mark (taken only)":71.0,"Test 2 minus Test 1":23,"Test average minus exam":5.5},{"No":3,"Name":"Momodu thoronka","ID Number":60015,"Test 1 (100)":83,"Test 2 (100)":85,"AVERAGE":84.0,"Final CA (30%)":25.2,"EXAMS":66,"FINAL_SCORE":71.4,"GRADE":"A","Exam status":"Taken","Exam mark (taken only)":66.0,"Test 2 minus Test 1":2,"Test average minus exam":18.0},{"No":4,"Name":"Morlai Ibrahim Kamara","ID Number":62163,"Test 1 (100)":60,"Test 2 (100)":83,"AVERAGE":71.5,"Final CA (30%)":21.45,"EXAMS":71,"FINAL_SCORE":71.15,"GRADE":"A","Exam status":"Taken","Exam mark (taken only)":71.0,"Test 2 minus Test 1":23,"Test average minus exam":0.5},{"No":5,"Name":"Maseray Lovetta Sesay","ID Number":61325,"Test 1 (100)":89,"Test 2 (100)":89,"AVERAGE":89.0,"Final CA (30%)":26.7,"EXAMS":62,"FINAL_SCORE":70.1,"GRADE":"A","Exam status":"Taken","Exam mark (taken only)":62.0,"Test 2 minus Test 1":0,"Test average minus exam":27.0},{"No":6,"Name":"Esther N.Kamara","ID Number":58472,"Test 1 (100)":80,"Test 2 (100)":89,"AVERAGE":84.5,"Final CA (30%)":25.35,"EXAMS":58,"FINAL_SCORE":65.95,"GRADE":"B+","Exam status":"Taken","Exam mark (taken only)":58.0,"Test 2 minus Test 1":9,"Test average minus exam":26.5},{"No":7,"Name":"Abdulai Senesie","ID Number":61971,"Test 1 (100)":65,"Test 2 (100)":88,"AVERAGE":76.5,"Final CA (30%)":22.95,"EXAMS":61,"FINAL_SCORE":65.65,"GRADE":"B+","Exam status":"Taken","Exam mark (taken only)":61.0,"Test 2 minus Test 1":23,"Test average minus exam":15.5},{"No":8,"Name":"Joseph Dumbuya","ID Number":64763,"Test 1 (100)":83,"Test 2 (100)":89,"AVERAGE":86.0,"Final CA (30%)":25.8,"EXAMS":56,"FINAL_SCORE":65.0,"GRADE":"B+","Exam status":"Taken","Exam mark (taken only)":56.0,"Test 2 minus Test 1":6,"Test average minus exam":30.0},{"No":9,"Name":"Johnny Paul Marah","ID Number":59769,"Test 1 (100)":61,"Test 2 (100)":71,"AVERAGE":66.0,"Final CA (30%)":19.8,"EXAMS":63,"FINAL_SCORE":63.9,"GRADE":"B","Exam status":"Taken","Exam mark (taken only)":63.0,"Test 2 minus Test 1":10,"Test average minus exam":3.0},{"No":10,"Name":"Rukiatu Sheriff","ID Number":60642,"Test 1 (100)":45,"Test 2 (100)":87,"AVERAGE":66.0,"Final CA (30%)":19.8,"EXAMS":61,"FINAL_SCORE":62.5,"GRADE":"B","Exam status":"Taken","Exam mark (taken only)":61.0,"Test 2 minus Test 1":42,"Test average minus exam":5.0},{"No":11,"Name":"AMADU KEITA KARGBO","ID Number":61398,"Test 1 (100)":56,"Test 2 (100)":85,"AVERAGE":70.5,"Final CA (30%)":21.15,"EXAMS":57,"FINAL_SCORE":61.05,"GRADE":"B","Exam status":"Taken","Exam mark (taken only)":57.0,"Test 2 minus Test 1":29,"Test average minus exam":13.5},{"No":12,"Name":"Mohamed Momoh","ID Number":64787,"Test 1 (100)":60,"Test 2 (100)":87,"AVERAGE":73.5,"Final CA (30%)":22.05,"EXAMS":54,"FINAL_SCORE":59.85,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":54.0,"Test 2 minus Test 1":27,"Test average minus exam":19.5},{"No":13,"Name":"Ahmed Bella Mansaray","ID Number":60821,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":60,"FINAL_SCORE":59.25,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":60.0,"Test 2 minus Test 1":55,"Test average minus exam":-2.5},{"No":14,"Name":"Habibatu Jalloh","ID Number":58858,"Test 1 (100)":71,"Test 2 (100)":88,"AVERAGE":79.5,"Final CA (30%)":23.85,"EXAMS":50,"FINAL_SCORE":58.85,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":17,"Test average minus exam":29.5},{"No":15,"Name":"Alie Mansaray","ID Number":55079,"Test 1 (100)":30,"Test 2 (100)":87,"AVERAGE":58.5,"Final CA (30%)":17.55,"EXAMS":57,"FINAL_SCORE":57.45,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":57.0,"Test 2 minus Test 1":57,"Test average minus exam":1.5},{"No":16,"Name":"Musu kamara","ID Number":64752,"Test 1 (100)":60,"Test 2 (100)":88,"AVERAGE":74.0,"Final CA (30%)":22.2,"EXAMS":50,"FINAL_SCORE":57.2,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":28,"Test average minus exam":24.0},{"No":17,"Name":"Abubakarr Sheriff","ID Number":60614,"Test 1 (100)":76,"Test 2 (100)":87,"AVERAGE":81.5,"Final CA (30%)":24.45,"EXAMS":46,"FINAL_SCORE":56.65,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":46.0,"Test 2 minus Test 1":11,"Test average minus exam":35.5},{"No":18,"Name":"Vivian Simeon Sawyerr","ID Number":28002,"Test 1 (100)":54,"Test 2 (100)":83,"AVERAGE":68.5,"Final CA (30%)":20.55,"EXAMS":51,"FINAL_SCORE":56.25,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":51.0,"Test 2 minus Test 1":29,"Test average minus exam":17.5},{"No":19,"Name":"MEDVAL S TURAY","ID Number":59385,"Test 1 (100)":49,"Test 2 (100)":83,"AVERAGE":66.0,"Final CA (30%)":19.8,"EXAMS":52,"FINAL_SCORE":56.2,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":52.0,"Test 2 minus Test 1":34,"Test average minus exam":14.0},{"No":20,"Name":"Abdulai S Bangura","ID Number":54902,"Test 1 (100)":55,"Test 2 (100)":86,"AVERAGE":70.5,"Final CA (30%)":21.15,"EXAMS":50,"FINAL_SCORE":56.15,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":31,"Test average minus exam":20.5},{"No":21,"Name":"Christian Abioseh Balogun Cole","ID Number":58679,"Test 1 (100)":45,"Test 2 (100)":89,"AVERAGE":67.0,"Final CA (30%)":20.1,"EXAMS":51,"FINAL_SCORE":55.8,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":51.0,"Test 2 minus Test 1":44,"Test average minus exam":16.0},{"No":22,"Name":"Rashid Turay","ID Number":59867,"Test 1 (100)":63,"Test 2 (100)":85,"AVERAGE":74.0,"Final CA (30%)":22.2,"EXAMS":47,"FINAL_SCORE":55.1,"GRADE":"B-","Exam status":"Taken","Exam mark (taken only)":47.0,"Test 2 minus Test 1":22,"Test average minus exam":27.0},{"No":23,"Name":"Madusu Mansaray","ID Number":58854,"Test 1 (100)":48,"Test 2 (100)":85,"AVERAGE":66.5,"Final CA (30%)":19.95,"EXAMS":50,"FINAL_SCORE":54.95,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":37,"Test average minus exam":16.5},{"No":24,"Name":"Bayo samura","ID Number":60893,"Test 1 (100)":49,"Test 2 (100)":86,"AVERAGE":67.5,"Final CA (30%)":20.25,"EXAMS":49,"FINAL_SCORE":54.55,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":49.0,"Test 2 minus Test 1":37,"Test average minus exam":18.5},{"No":25,"Name":"Ibrahim T Jalloh","ID Number":56837,"Test 1 (100)":70,"Test 2 (100)":86,"AVERAGE":78.0,"Final CA (30%)":23.4,"EXAMS":43,"FINAL_SCORE":53.5,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":43.0,"Test 2 minus Test 1":16,"Test average minus exam":35.0},{"No":26,"Name":"Joel Tom Miller","ID Number":58856,"Test 1 (100)":30,"Test 2 (100)":88,"AVERAGE":59.0,"Final CA (30%)":17.7,"EXAMS":51,"FINAL_SCORE":53.4,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":51.0,"Test 2 minus Test 1":58,"Test average minus exam":8.0},{"No":27,"Name":"Solomon P. KAMARA","ID Number":60484,"Test 1 (100)":37,"Test 2 (100)":83,"AVERAGE":60.0,"Final CA (30%)":18.0,"EXAMS":50,"FINAL_SCORE":53.0,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":46,"Test average minus exam":10.0},{"No":28,"Name":"MARION LUSENIE","ID Number":62225,"Test 1 (100)":50,"Test 2 (100)":83,"AVERAGE":66.5,"Final CA (30%)":19.95,"EXAMS":47,"FINAL_SCORE":52.85,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":47.0,"Test 2 minus Test 1":33,"Test average minus exam":19.5},{"No":29,"Name":"Mohamed Alpha Kamara","ID Number":60709,"Test 1 (100)":53,"Test 2 (100)":83,"AVERAGE":68.0,"Final CA (30%)":20.4,"EXAMS":45,"FINAL_SCORE":51.9,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":45.0,"Test 2 minus Test 1":30,"Test average minus exam":23.0},{"No":30,"Name":"Akubue Great","ID Number":62271,"Test 1 (100)":30,"Test 2 (100)":87,"AVERAGE":58.5,"Final CA (30%)":17.55,"EXAMS":49,"FINAL_SCORE":51.85,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":49.0,"Test 2 minus Test 1":57,"Test average minus exam":9.5},{"No":31,"Name":"Emma khodah Kamara","ID Number":64977,"Test 1 (100)":30,"Test 2 (100)":83,"AVERAGE":56.5,"Final CA (30%)":16.95,"EXAMS":49,"FINAL_SCORE":51.25,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":49.0,"Test 2 minus Test 1":53,"Test average minus exam":7.5},{"No":32,"Name":"Abdulai Turay","ID Number":64742,"Test 1 (100)":51,"Test 2 (100)":85,"AVERAGE":68.0,"Final CA (30%)":20.4,"EXAMS":44,"FINAL_SCORE":51.2,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":44.0,"Test 2 minus Test 1":34,"Test average minus exam":24.0},{"No":33,"Name":"Tamba James Gbosowa","ID Number":61566,"Test 1 (100)":59,"Test 2 (100)":30,"AVERAGE":44.5,"Final CA (30%)":13.35,"EXAMS":54,"FINAL_SCORE":51.15,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":54.0,"Test 2 minus Test 1":-29,"Test average minus exam":-9.5},{"No":34,"Name":"Ibrahim Sorie Kamara","ID Number":61279,"Test 1 (100)":30,"Test 2 (100)":86,"AVERAGE":58.0,"Final CA (30%)":17.4,"EXAMS":48,"FINAL_SCORE":51.0,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":48.0,"Test 2 minus Test 1":56,"Test average minus exam":10.0},{"No":35,"Name":"Aiah mansaray","ID Number":59066,"Test 1 (100)":30,"Test 2 (100)":86,"AVERAGE":58.0,"Final CA (30%)":17.4,"EXAMS":47,"FINAL_SCORE":50.3,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":47.0,"Test 2 minus Test 1":56,"Test average minus exam":11.0},{"No":36,"Name":"Alhaji B Baldeh","ID Number":58857,"Test 1 (100)":55,"Test 2 (100)":89,"AVERAGE":72.0,"Final CA (30%)":21.6,"EXAMS":41,"FINAL_SCORE":50.3,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":41.0,"Test 2 minus Test 1":34,"Test average minus exam":31.0},{"No":37,"Name":"Musa Mansaray","ID Number":62053,"Test 1 (100)":30,"Test 2 (100)":86,"AVERAGE":58.0,"Final CA (30%)":17.4,"EXAMS":47,"FINAL_SCORE":50.3,"GRADE":"C+","Exam status":"Taken","Exam mark (taken only)":47.0,"Test 2 minus Test 1":56,"Test average minus exam":11.0},{"No":38,"Name":"Emmanuel Francis Kamara","ID Number":60449,"Test 1 (100)":49,"Test 2 (100)":86,"AVERAGE":67.5,"Final CA (30%)":20.25,"EXAMS":42,"FINAL_SCORE":49.65,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":42.0,"Test 2 minus Test 1":37,"Test average minus exam":25.5},{"No":39,"Name":"Mamadu Hady Barrie","ID Number":61280,"Test 1 (100)":60,"Test 2 (100)":87,"AVERAGE":73.5,"Final CA (30%)":22.05,"EXAMS":39,"FINAL_SCORE":49.35,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":39.0,"Test 2 minus Test 1":27,"Test average minus exam":34.5},{"No":40,"Name":"Umarr Abba","ID Number":60613,"Test 1 (100)":50,"Test 2 (100)":86,"AVERAGE":68.0,"Final CA (30%)":20.4,"EXAMS":41,"FINAL_SCORE":49.1,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":41.0,"Test 2 minus Test 1":36,"Test average minus exam":27.0},{"No":41,"Name":"Alie lamin kamara","ID Number":59866,"Test 1 (100)":35,"Test 2 (100)":85,"AVERAGE":60.0,"Final CA (30%)":18.0,"EXAMS":44,"FINAL_SCORE":48.8,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":44.0,"Test 2 minus Test 1":50,"Test average minus exam":16.0},{"No":42,"Name":"Fatima Bangalie","ID Number":64956,"Test 1 (100)":60,"Test 2 (100)":88,"AVERAGE":74.0,"Final CA (30%)":22.2,"EXAMS":38,"FINAL_SCORE":48.8,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":38.0,"Test 2 minus Test 1":28,"Test average minus exam":36.0},{"No":43,"Name":"Mohamed Jabbie","ID Number":55569,"Test 1 (100)":55,"Test 2 (100)":85,"AVERAGE":70.0,"Final CA (30%)":21.0,"EXAMS":39,"FINAL_SCORE":48.3,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":39.0,"Test 2 minus Test 1":30,"Test average minus exam":31.0},{"No":44,"Name":"Morlai Koroma","ID Number":56841,"Test 1 (100)":56,"Test 2 (100)":88,"AVERAGE":72.0,"Final CA (30%)":21.6,"EXAMS":38,"FINAL_SCORE":48.2,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":38.0,"Test 2 minus Test 1":32,"Test average minus exam":34.0},{"No":45,"Name":"Samuel Emmanuel Nicol","ID Number":64957,"Test 1 (100)":30,"Test 2 (100)":83,"AVERAGE":56.5,"Final CA (30%)":16.95,"EXAMS":44,"FINAL_SCORE":47.75,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":44.0,"Test 2 minus Test 1":53,"Test average minus exam":12.5},{"No":46,"Name":"Ansumana Sannoh","ID Number":58634,"Test 1 (100)":78,"Test 2 (100)":85,"AVERAGE":81.5,"Final CA (30%)":24.45,"EXAMS":33,"FINAL_SCORE":47.55,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":33.0,"Test 2 minus Test 1":7,"Test average minus exam":48.5},{"No":47,"Name":"SULAIMAN SESAY","ID Number":64958,"Test 1 (100)":47,"Test 2 (100)":86,"AVERAGE":66.5,"Final CA (30%)":19.95,"EXAMS":39,"FINAL_SCORE":47.25,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":39.0,"Test 2 minus Test 1":39,"Test average minus exam":27.5},{"No":48,"Name":"Wahbitoh Emmanuel Juma King","ID Number":63108,"Test 1 (100)":68,"Test 2 (100)":88,"AVERAGE":78.0,"Final CA (30%)":23.4,"EXAMS":34,"FINAL_SCORE":47.2,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":34.0,"Test 2 minus Test 1":20,"Test average minus exam":44.0},{"No":49,"Name":"Ramatu Turay","ID Number":58422,"Test 1 (100)":40,"Test 2 (100)":87,"AVERAGE":63.5,"Final CA (30%)":19.05,"EXAMS":40,"FINAL_SCORE":47.05,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":40.0,"Test 2 minus Test 1":47,"Test average minus exam":23.5},{"No":50,"Name":"Hawa Kamanda","ID Number":61657,"Test 1 (100)":40,"Test 2 (100)":86,"AVERAGE":63.0,"Final CA (30%)":18.9,"EXAMS":40,"FINAL_SCORE":46.9,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":40.0,"Test 2 minus Test 1":46,"Test average minus exam":23.0},{"No":51,"Name":"Alhaji Foday Marrah","ID Number":60344,"Test 1 (100)":30,"Test 2 (100)":40,"AVERAGE":35.0,"Final CA (30%)":10.5,"EXAMS":51,"FINAL_SCORE":46.2,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":51.0,"Test 2 minus Test 1":10,"Test average minus exam":-16.0},{"No":52,"Name":"ISMAIL ABUBAKARR SESAY","ID Number":59583,"Test 1 (100)":30,"Test 2 (100)":30,"AVERAGE":30.0,"Final CA (30%)":9.0,"EXAMS":53,"FINAL_SCORE":46.1,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":53.0,"Test 2 minus Test 1":0,"Test average minus exam":-23.0},{"No":53,"Name":"David Koroma","ID Number":58633,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":41,"FINAL_SCORE":45.95,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":41.0,"Test 2 minus Test 1":55,"Test average minus exam":16.5},{"No":54,"Name":"Emurana Kingmanja","ID Number":56998,"Test 1 (100)":78,"Test 2 (100)":86,"AVERAGE":82.0,"Final CA (30%)":24.6,"EXAMS":30,"FINAL_SCORE":45.6,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":30.0,"Test 2 minus Test 1":8,"Test average minus exam":52.0},{"No":55,"Name":"Jedediah Esther Koroma","ID Number":64904,"Test 1 (100)":41,"Test 2 (100)":85,"AVERAGE":63.0,"Final CA (30%)":18.9,"EXAMS":38,"FINAL_SCORE":45.5,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":38.0,"Test 2 minus Test 1":44,"Test average minus exam":25.0},{"No":56,"Name":"Khadiyatu Kanu","ID Number":58860,"Test 1 (100)":30,"Test 2 (100)":40,"AVERAGE":35.0,"Final CA (30%)":10.5,"EXAMS":50,"FINAL_SCORE":45.5,"GRADE":"C","Exam status":"Taken","Exam mark (taken only)":50.0,"Test 2 minus Test 1":10,"Test average minus exam":-15.0},{"No":57,"Name":"Mohamed Salamu Fofanah","ID Number":58420,"Test 1 (100)":30,"Test 2 (100)":83,"AVERAGE":56.5,"Final CA (30%)":16.95,"EXAMS":40,"FINAL_SCORE":44.95,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":40.0,"Test 2 minus Test 1":53,"Test average minus exam":16.5},{"No":58,"Name":"Ivan Archibald Bodkin","ID Number":65341,"Test 1 (100)":55,"Test 2 (100)":86,"AVERAGE":70.5,"Final CA (30%)":21.15,"EXAMS":33,"FINAL_SCORE":44.25,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":33.0,"Test 2 minus Test 1":31,"Test average minus exam":37.5},{"No":59,"Name":"KARIFALA ALFRED KAMARA","ID Number":61186,"Test 1 (100)":59,"Test 2 (100)":40,"AVERAGE":49.5,"Final CA (30%)":14.85,"EXAMS":42,"FINAL_SCORE":44.25,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":42.0,"Test 2 minus Test 1":-19,"Test average minus exam":7.5},{"No":60,"Name":"Musa Ahmed Sesay","ID Number":12839,"Test 1 (100)":55,"Test 2 (100)":86,"AVERAGE":70.5,"Final CA (30%)":21.15,"EXAMS":31,"FINAL_SCORE":42.85,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":31.0,"Test 2 minus Test 1":31,"Test average minus exam":39.5},{"No":61,"Name":"John Fogbawa","ID Number":65556,"Test 1 (100)":29,"Test 2 (100)":86,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":36,"FINAL_SCORE":42.45,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":36.0,"Test 2 minus Test 1":57,"Test average minus exam":21.5},{"No":62,"Name":"IBRAHIM FOFANAH","ID Number":57178,"Test 1 (100)":30,"Test 2 (100)":88,"AVERAGE":59.0,"Final CA (30%)":17.7,"EXAMS":35,"FINAL_SCORE":42.2,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":35.0,"Test 2 minus Test 1":58,"Test average minus exam":24.0},{"No":63,"Name":"Saio Marah","ID Number":61553,"Test 1 (100)":36,"Test 2 (100)":40,"AVERAGE":38.0,"Final CA (30%)":11.4,"EXAMS":44,"FINAL_SCORE":42.2,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":44.0,"Test 2 minus Test 1":4,"Test average minus exam":-6.0},{"No":64,"Name":"Amadu Barrie","ID Number":58421,"Test 1 (100)":30,"Test 2 (100)":86,"AVERAGE":58.0,"Final CA (30%)":17.4,"EXAMS":35,"FINAL_SCORE":41.9,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":35.0,"Test 2 minus Test 1":56,"Test average minus exam":23.0},{"No":65,"Name":"Abu Bakarr Jalloh","ID Number":60820,"Test 1 (100)":60,"Test 2 (100)":88,"AVERAGE":74.0,"Final CA (30%)":22.2,"EXAMS":28,"FINAL_SCORE":41.8,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":28.0,"Test 2 minus Test 1":28,"Test average minus exam":46.0},{"No":66,"Name":"Muhammad Mustapha Jalloh","ID Number":60005,"Test 1 (100)":35,"Test 2 (100)":85,"AVERAGE":60.0,"Final CA (30%)":18.0,"EXAMS":34,"FINAL_SCORE":41.8,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":34.0,"Test 2 minus Test 1":50,"Test average minus exam":26.0},{"No":67,"Name":"Abu Bakarr Konkoh Kamara","ID Number":58631,"Test 1 (100)":30,"Test 2 (100)":88,"AVERAGE":59.0,"Final CA (30%)":17.7,"EXAMS":34,"FINAL_SCORE":41.5,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":34.0,"Test 2 minus Test 1":58,"Test average minus exam":25.0},{"No":68,"Name":"STEVEN P. MORIE","ID Number":59770,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":33,"FINAL_SCORE":40.35,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":33.0,"Test 2 minus Test 1":55,"Test average minus exam":24.5},{"No":69,"Name":"KARGBO UNISA JOHN","ID Number":60776,"Test 1 (100)":36,"Test 2 (100)":40,"AVERAGE":38.0,"Final CA (30%)":11.4,"EXAMS":41,"FINAL_SCORE":40.1,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":41.0,"Test 2 minus Test 1":4,"Test average minus exam":-3.0},{"No":70,"Name":"Sallieu Sesay","ID Number":58853,"Test 1 (100)":30,"Test 2 (100)":88,"AVERAGE":59.0,"Final CA (30%)":17.7,"EXAMS":32,"FINAL_SCORE":40.1,"GRADE":"C-","Exam status":"Taken","Exam mark (taken only)":32.0,"Test 2 minus Test 1":58,"Test average minus exam":27.0},{"No":71,"Name":"Salifu Mayoh Mansaray","ID Number":61092,"Test 1 (100)":43,"Test 2 (100)":85,"AVERAGE":64.0,"Final CA (30%)":19.2,"EXAMS":29,"FINAL_SCORE":39.5,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":29.0,"Test 2 minus Test 1":42,"Test average minus exam":35.0},{"No":72,"Name":"Hassan bakarr sesay","ID Number":24839,"Test 1 (100)":39,"Test 2 (100)":86,"AVERAGE":62.5,"Final CA (30%)":18.75,"EXAMS":29,"FINAL_SCORE":39.05,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":29.0,"Test 2 minus Test 1":47,"Test average minus exam":33.5},{"No":73,"Name":"Mohamed Lamin Mansaray","ID Number":59644,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":31,"FINAL_SCORE":38.95,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":31.0,"Test 2 minus Test 1":55,"Test average minus exam":26.5},{"No":74,"Name":"ABUBAKARR CONTEH","ID Number":61901,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":29,"FINAL_SCORE":37.55,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":29.0,"Test 2 minus Test 1":55,"Test average minus exam":28.5},{"No":75,"Name":"Sulaiman Bundu Koroma","ID Number":59767,"Test 1 (100)":30,"Test 2 (100)":87,"AVERAGE":58.5,"Final CA (30%)":17.55,"EXAMS":28,"FINAL_SCORE":37.15,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":28.0,"Test 2 minus Test 1":57,"Test average minus exam":30.5},{"No":76,"Name":"Lahai koroma","ID Number":55767,"Test 1 (100)":37,"Test 2 (100)":85,"AVERAGE":61.0,"Final CA (30%)":18.3,"EXAMS":26,"FINAL_SCORE":36.5,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":26.0,"Test 2 minus Test 1":48,"Test average minus exam":35.0},{"No":77,"Name":"Francess Kosielateh Kamara","ID Number":61277,"Test 1 (100)":30,"Test 2 (100)":87,"AVERAGE":58.5,"Final CA (30%)":17.55,"EXAMS":27,"FINAL_SCORE":36.45,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":27.0,"Test 2 minus Test 1":57,"Test average minus exam":31.5},{"No":78,"Name":"Abdul Tawab Abubakarr","ID Number":61970,"Test 1 (100)":30,"Test 2 (100)":86,"AVERAGE":58.0,"Final CA (30%)":17.4,"EXAMS":25,"FINAL_SCORE":34.9,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":25.0,"Test 2 minus Test 1":56,"Test average minus exam":33.0},{"No":79,"Name":"Mohamed Kalie Jalloh","ID Number":59384,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":23,"FINAL_SCORE":33.35,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":23.0,"Test 2 minus Test 1":55,"Test average minus exam":34.5},{"No":80,"Name":"Mohamed Mansaray","ID Number":58469,"Test 1 (100)":20,"Test 2 (100)":85,"AVERAGE":52.5,"Final CA (30%)":15.75,"EXAMS":25,"FINAL_SCORE":33.25,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":25.0,"Test 2 minus Test 1":65,"Test average minus exam":27.5},{"No":81,"Name":"Habib Michael Bindi","ID Number":58007,"Test 1 (100)":0,"Test 2 (100)":86,"AVERAGE":43.0,"Final CA (30%)":12.9,"EXAMS":27,"FINAL_SCORE":31.8,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":27.0,"Test 2 minus Test 1":86,"Test average minus exam":16.0},{"No":82,"Name":"SAMUEL C. WILL","ID Number":26121,"Test 1 (100)":30,"Test 2 (100)":30,"AVERAGE":30.0,"Final CA (30%)":9.0,"EXAMS":26,"FINAL_SCORE":27.2,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":26.0,"Test 2 minus Test 1":0,"Test average minus exam":4.0},{"No":83,"Name":"Patrick kai Kai","ID Number":56775,"Test 1 (100)":40,"Test 2 (100)":87,"AVERAGE":63.5,"Final CA (30%)":19.05,"EXAMS":11,"FINAL_SCORE":26.75,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":11.0,"Test 2 minus Test 1":47,"Test average minus exam":52.5},{"No":84,"Name":"Abdul Hassan Turay","ID Number":53598,"Test 1 (100)":30,"Test 2 (100)":85,"AVERAGE":57.5,"Final CA (30%)":17.25,"EXAMS":21,"FINAL_SCORE":31.95,"GRADE":"F","Exam status":"Taken","Exam mark (taken only)":21.0,"Test 2 minus Test 1":55,"Test average minus exam":36.5},{"No":85,"Name":"Alhaji Bubakarr Jalloh","ID Number":58852,"Test 1 (100)":44,"Test 2 (100)":40,"AVERAGE":42.0,"Final CA (30%)":12.6,"EXAMS":0,"FINAL_SCORE":null,"GRADE":null,"Exam status":"Absent","Exam mark (taken only)":null,"Test 2 minus Test 1":-4,"Test average minus exam":null},{"No":86,"Name":"Mohamed Bailo Bah","ID Number":56616,"Test 1 (100)":30,"Test 2 (100)":50,"AVERAGE":40.0,"Final CA (30%)":12.0,"EXAMS":0,"FINAL_SCORE":null,"GRADE":null,"Exam status":"Absent","Exam mark (taken only)":null,"Test 2 minus Test 1":20,"Test average minus exam":null}];
+
+    const GRADE_ORDER = ["A", "B+", "B", "B-", "C+", "C", "C-", "F"];
+    const GRADE_COLOR = {
+      A: "#1b7a4a",
+      "B+": "#1f8a78",
+      B: "#1d6494",
+      "B-": "#3a5680",
+      "C+": "#b86a12",
+      C: "#c56a1a",
+      "C-": "#b24e22",
+      F: "#9d1c2a"
+    };
+    const PASS = new Set(["A", "B+", "B", "B-", "C+", "C", "C-"]);
+    const SPREAD_LABEL = {
+      "Test 1 (100)": "Test 1",
+      "Test 2 (100)": "Test 2",
+      EXAMS: "Exam",
+      FINAL_SCORE: "Final score"
+    };
+
+    const state = {
+      grades: new Set(),
+      status: "all",
+      query: "",
+      selected: null,
+      spread: "FINAL_SCORE",
+      sortKey: "FINAL_SCORE",
+      sortDir: -1
+    };
+
+    const summaryEl = document.getElementById("summary");
+    const ladderEl = document.getElementById("ladder");
+    const meansEl = document.getElementById("means");
+    const meansNote = document.getElementById("means-note");
+    const spreadEl = document.getElementById("spread");
+    const spreadNote = document.getElementById("spread-note");
+    const scriptEl = document.getElementById("script");
+    const scatterEl = document.getElementById("scatter");
+    const scatterNote = document.getElementById("scatter-note");
+    const rowsEl = document.getElementById("rows");
+    const listCount = document.getElementById("list-count");
+    const emptyEl = document.getElementById("empty");
+    const clearBtn = document.getElementById("clear");
+    const tip = document.getElementById("tip");
+
+    function fmt(n) {
+      if (n == null || Number.isNaN(Number(n))) return "—";
+      const r = Math.round(Number(n) * 10) / 10;
+      return Number.isInteger(r) ? String(r) : r.toFixed(1);
+    }
+
+    function points(n) {
+      const text = fmt(Math.abs(n));
+      return `${text} ${text === "1" ? "point" : "points"}`;
+    }
+
+    function mean(list, key) {
+      const vals = list.map((s) => s[key]).filter((v) => v != null && v !== "");
+      if (!vals.length) return null;
+      return vals.reduce((a, b) => a + Number(b), 0) / vals.length;
+    }
+
+    function passes(s) {
+      if (state.status !== "all" && s["Exam status"] !== state.status) return false;
+      if (state.grades.size && !state.grades.has(s.GRADE)) return false;
+      const q = state.query.trim().toLowerCase();
+      if (!q) return true;
+      return s.Name.toLowerCase().includes(q) || String(s["ID Number"]).includes(q);
+    }
+
+    function view() {
+      return STUDENTS.filter(passes);
+    }
+
+    function scoreOf(s, key) {
+      if (key === "EXAMS" && s["Exam status"] !== "Taken") return null;
+      if (key === "FINAL_SCORE" && s.FINAL_SCORE == null) return null;
+      return s[key];
+    }
+
+    function sortValue(s, key) {
+      if (key === "Name") return s.Name.toLowerCase();
+      if (key === "GRADE") {
+        const i = GRADE_ORDER.indexOf(s.GRADE);
+        return i === -1 ? null : i;
+      }
+      return scoreOf(s, key);
+    }
+
+    function sorted(list) {
+      const dir = state.sortDir;
+      return list.slice().sort((a, b) => {
+        const av = sortValue(a, state.sortKey);
+        const bv = sortValue(b, state.sortKey);
+        if (av == null && bv == null) return a.No - b.No;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return a.No - b.No;
+      });
+    }
+
+    function filtersOn() {
+      return state.grades.size > 0 || state.status !== "all" || state.query.trim() !== "";
+    }
+
+    function quantile(sortedVals, p) {
+      const idx = (sortedVals.length - 1) * p;
+      const lo = Math.floor(idx);
+      const hi = Math.ceil(idx);
+      if (lo === hi) return sortedVals[lo];
+      return sortedVals[lo] * (hi - idx) + sortedVals[hi] * (idx - lo);
+    }
+
+    function renderSummary(list) {
+      const passed = list.filter((s) => PASS.has(s.GRADE)).length;
+      const failed = list.filter((s) => s.GRADE === "F").length;
+      const absent = list.filter((s) => s["Exam status"] === "Absent").length;
+      const finals = list.filter((s) => s.FINAL_SCORE != null);
+      const avg = mean(finals, "FINAL_SCORE");
+      const whole = !filtersOn();
+      if (!list.length) {
+        summaryEl.textContent = "Nothing matches the current filter.";
+        return;
+      }
+      const tail = avg == null ? "" : ` The mean final score is ${fmt(avg)}.`;
+      if (absent === list.length) {
+        summaryEl.textContent = list.length === 1
+          ? `${list[0].Name} was absent from the exam and has no final grade.`
+          : `${list.length} students in this view. All were absent and have no final grade.`;
+        return;
+      }
+      if (whole) {
+        summaryEl.textContent = `${passed} passed, ${failed} failed, and ${absent} were absent.${tail}`;
+        return;
+      }
+      const who = list.length === 1 ? "1 student in this view." : `${list.length} students in this view.`;
+      const bits = [];
+      if (passed) bits.push(`${passed} passed`);
+      if (failed) bits.push(`${failed} failed`);
+      summaryEl.textContent = `${who} ${bits.join(" and ")}.${tail}`;
+    }
+
+    function renderLadder(list) {
+      const active = state.grades.size > 0;
+      const counts = Object.fromEntries(GRADE_ORDER.map((g) => [g, 0]));
+      STUDENTS.forEach((s) => {
+        if (state.status !== "all" && s["Exam status"] !== state.status) return;
+        const q = state.query.trim().toLowerCase();
+        if (q && !(s.Name.toLowerCase().includes(q) || String(s["ID Number"]).includes(q))) return;
+        if (counts[s.GRADE] != null) counts[s.GRADE] += 1;
+      });
+      const max = Math.max(1, ...GRADE_ORDER.map((g) => counts[g]));
+      ladderEl.replaceChildren();
+      GRADE_ORDER.forEach((g) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "grade-col";
+        btn.dataset.grade = g;
+        btn.setAttribute("aria-pressed", state.grades.has(g) ? "true" : "false");
+        if (active && !state.grades.has(g)) btn.classList.add("is-dim");
+        const count = document.createElement("span");
+        count.className = "count";
+        count.textContent = String(counts[g]);
+        const bar = document.createElement("span");
+        bar.className = "bar";
+        bar.style.height = `${Math.max(4, Math.round((counts[g] / max) * 130))}px`;
+        bar.style.background = GRADE_COLOR[g];
+        const letter = document.createElement("span");
+        letter.className = "letter";
+        letter.textContent = g;
+        btn.append(count, bar, letter);
+        btn.setAttribute("aria-label", `${g}, ${counts[g]} students`);
+        ladderEl.append(btn);
+      });
+    }
+
+    function renderMeans(list) {
+      const sat = list.filter((s) => s["Exam status"] === "Taken");
+      const rows = [
+        ["Test 1", mean(list, "Test 1 (100)"), "#1d4e89"],
+        ["Test 2", mean(list, "Test 2 (100)"), "#1c6b43"],
+        ["Exam", mean(sat, "EXAMS"), "#9d1c2a"]
+      ];
+      meansEl.replaceChildren();
+      rows.forEach(([label, value, color]) => {
+        const row = document.createElement("div");
+        row.className = "mean-row";
+        const name = document.createElement("span");
+        name.textContent = label;
+        const track = document.createElement("span");
+        track.className = "mean-track";
+        const fill = document.createElement("span");
+        fill.className = "mean-fill";
+        fill.style.background = color;
+        fill.style.width = value == null ? "0%" : `${Math.max(0, Math.min(100, value))}%`;
+        track.append(fill);
+        const num = document.createElement("span");
+        num.className = "mean-value";
+        num.textContent = fmt(value);
+        row.append(name, track, num);
+        meansEl.append(row);
+      });
+      const t1 = mean(list, "Test 1 (100)");
+      const t2 = mean(list, "Test 2 (100)");
+      const exam = mean(sat, "EXAMS");
+      const up = list.filter((s) => s["Test 2 minus Test 1"] > 0).length;
+      if (t2 == null) {
+        meansNote.textContent = "";
+        return;
+      }
+      const change = `${up} of ${list.length} scored higher on Test 2 than on Test 1.`;
+      if (exam == null) {
+        meansNote.textContent = `Test 1 averages ${fmt(t1)} and Test 2 averages ${fmt(t2)}. Nobody in this view sat the exam. ${change}`;
+        return;
+      }
+      const gap = t2 - exam;
+      const direction = gap >= 0
+        ? `The exam averages ${fmt(exam)}, which is ${points(gap)} lower than Test 2.`
+        : `The exam averages ${fmt(exam)}, which is ${points(gap)} higher than Test 2.`;
+      meansNote.textContent = `${direction} ${change}`;
+    }
+
+    function renderSpread(list) {
+      const key = state.spread;
+      document.querySelectorAll("[data-spread]").forEach((btn) => {
+        btn.setAttribute("aria-pressed", btn.dataset.spread === key ? "true" : "false");
+      });
+      const plotted = list.filter((s) => scoreOf(s, key) != null);
+      const skipped = list.length - plotted.length;
+      const label = SPREAD_LABEL[key];
+      spreadNote.textContent = skipped
+        ? `${label} for ${plotted.length} students. ${skipped} ${skipped === 1 ? "has" : "have"} no ${label.toLowerCase()} in this view.`
+        : `${label} for ${plotted.length} students. Each dot is one student.`;
+
+      spreadEl.replaceChildren();
+      if (!plotted.length) return;
+
+      const vals = plotted.map((s) => Number(scoreOf(s, key))).sort((a, b) => a - b);
+      const q1 = quantile(vals, 0.25);
+      const med = quantile(vals, 0.5);
+      const q3 = quantile(vals, 0.75);
+      const iqr = q3 - q1;
+      const lowFence = q1 - 1.5 * iqr;
+      const highFence = q3 + 1.5 * iqr;
+      const whiskLo = vals.find((v) => v >= lowFence);
+      const whiskHi = [...vals].reverse().find((v) => v <= highFence);
+
+      const w = 640;
+      const h = 280;
+      const padL = 36;
+      const padR = 16;
+      const padT = 16;
+      const padB = 28;
+      const yOf = (v) => padT + (100 - v) / 100 * (h - padT - padB);
+      const svg = svgEl("svg", { class: "chart", viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": `${label} box plot with one dot per student` });
+      [0, 25, 50, 75, 100].forEach((tick) => {
+        const y = yOf(tick);
+        svg.append(svgEl("line", { x1: padL, x2: w - padR, y1: y, y2: y, stroke: "#d5dee4", "stroke-width": "1" }));
+        const t = svgEl("text", { x: 0, y: y + 4 });
+        t.textContent = String(tick);
+        svg.append(t);
+      });
+
+      const cx = 150;
+      svg.append(svgEl("line", { x1: cx, x2: cx, y1: yOf(whiskLo), y2: yOf(whiskHi), stroke: "#1b2430", "stroke-width": "2" }));
+      [whiskLo, whiskHi].forEach((v) => {
+        svg.append(svgEl("line", { x1: cx - 18, x2: cx + 18, y1: yOf(v), y2: yOf(v), stroke: "#1b2430", "stroke-width": "2" }));
+      });
+      const box = svgEl("rect", {
+        x: cx - 28,
+        y: yOf(q3),
+        width: 56,
+        height: Math.max(1, yOf(q1) - yOf(q3)),
+        fill: "#d9e6f2",
+        stroke: "#1b2430",
+        "stroke-width": "2"
+      });
+      svg.append(box);
+      svg.append(svgEl("line", { x1: cx - 28, x2: cx + 28, y1: yOf(med), y2: yOf(med), stroke: "#1a4f8b", "stroke-width": "3" }));
+
+      const spots = [];
+      plotted
+        .slice()
+        .sort((a, b) => Number(scoreOf(a, key)) - Number(scoreOf(b, key)) || a.No - b.No)
+        .forEach((s) => {
+          const v = Number(scoreOf(s, key));
+          const y = yOf(v);
+          let x = 250;
+          let step = 0;
+          while (spots.some((p) => Math.abs(p.y - y) < 12 && Math.abs(p.x - x) < 12) && step < 80) {
+            step += 1;
+            const side = step % 2 === 0 ? 1 : -1;
+            x = 250 + side * Math.ceil(step / 2) * 13;
+          }
+          x = Math.max(210, Math.min(w - 18, x));
+          spots.push({ s, x, y, v });
+        });
+      spots.forEach(({ s, x, y, v }) => {
+        const outlier = v < lowFence || v > highFence;
+        const c = svgEl("circle", {
+          cx: x,
+          cy: y,
+          r: state.selected === s.No ? 7 : 5,
+          fill: GRADE_COLOR[s.GRADE] || "#5c6b7a",
+          stroke: state.selected === s.No ? "#1b2430" : "white",
+          "stroke-width": state.selected === s.No ? "2" : "1",
+          tabindex: "0",
+          role: "button"
+        });
+        c.dataset.no = String(s.No);
+        c.dataset.tip = `${s.Name} · ${label} ${fmt(v)}${s.GRADE ? " · " + s.GRADE : ""}${outlier ? " · outlier" : ""}`;
+        c.setAttribute("aria-label", c.dataset.tip);
+        svg.append(c);
+      });
+      spreadEl.append(svg);
+    }
+
+    function renderScript() {
+      const s = STUDENTS.find((row) => row.No === state.selected);
+      scriptEl.replaceChildren();
+      scriptEl.style.borderLeftColor = s && s.GRADE ? GRADE_COLOR[s.GRADE] : "#c5d0d8";
+      const heading = document.createElement("h2");
+      heading.textContent = "One student";
+      scriptEl.append(heading);
+      if (!s) {
+        const ranked = view().filter((row) => row.FINAL_SCORE != null);
+        const p = document.createElement("p");
+        p.className = "prompt";
+        p.textContent = "Click a dot or a name. That student's marks open on this sheet.";
+        scriptEl.append(p);
+        if (ranked.length) {
+          const high = ranked.reduce((a, b) => (a.FINAL_SCORE >= b.FINAL_SCORE ? a : b));
+          const low = ranked.reduce((a, b) => (a.FINAL_SCORE <= b.FINAL_SCORE ? a : b));
+          const list = document.createElement("div");
+          list.className = "ends";
+          [["Highest", high], ["Lowest", low]].forEach(([caption, row]) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "end";
+            btn.dataset.no = String(row.No);
+            const cap = document.createElement("span");
+            cap.textContent = caption;
+            const nm = document.createElement("strong");
+            nm.textContent = row.Name;
+            const sc = document.createElement("span");
+            sc.textContent = `${fmt(row.FINAL_SCORE)} · ${row.GRADE}`;
+            btn.append(cap, nm, sc);
+            list.append(btn);
+          });
+          scriptEl.append(list);
+        }
+        return;
+      }
+      const top = document.createElement("div");
+      top.className = "script-top";
+      const whoWrap = document.createElement("div");
+      const who = document.createElement("p");
+      who.className = "who";
+      who.textContent = s.Name;
+      const id = document.createElement("p");
+      id.className = "id";
+      id.textContent = `ID ${s["ID Number"]}`;
+      whoWrap.append(who, id);
+      const mark = document.createElement("div");
+      mark.className = "mark";
+      mark.style.color = s.GRADE ? GRADE_COLOR[s.GRADE] : "#3e4c5c";
+      mark.textContent = s.GRADE || "Absent";
+      top.append(whoWrap, mark);
+      const table = document.createElement("table");
+      table.className = "lines";
+      const body = document.createElement("tbody");
+      const examText = s["Exam status"] === "Taken" ? fmt(s.EXAMS) : "Absent";
+      [
+        ["Test 1", fmt(s["Test 1 (100)"])],
+        ["Test 2", fmt(s["Test 2 (100)"])],
+        ["Coursework average", fmt(s.AVERAGE)],
+        ["Exam", examText],
+        ["Final", fmt(s.FINAL_SCORE)]
+      ].forEach(([k, v]) => {
+        const tr = document.createElement("tr");
+        const th = document.createElement("th");
+        th.scope = "row";
+        th.textContent = k;
+        const td = document.createElement("td");
+        td.textContent = v;
+        tr.append(th, td);
+        body.append(tr);
+      });
+      table.append(body);
+      const remark = document.createElement("p");
+      remark.className = "remark";
+      remark.textContent = remarkFor(s);
+      scriptEl.append(top, table, remark);
+    }
+
+    function remarkFor(s) {
+      const delta = s["Test 2 minus Test 1"];
+      const testLine = delta === 0
+        ? "Test 2 matched Test 1."
+        : delta > 0
+          ? `Test 2 was ${points(delta)} above Test 1.`
+          : `Test 2 was ${points(delta)} below Test 1.`;
+      if (s["Exam status"] !== "Taken") return `${testLine} They did not sit the exam, so there is no final grade.`;
+      const gap = s["Test average minus exam"];
+      const examLine = gap > 0
+        ? `The exam was ${points(gap)} below the coursework average.`
+        : gap < 0
+          ? `The exam was ${points(gap)} above the coursework average.`
+          : "The exam matched the coursework average.";
+      return `${testLine} ${examLine}`;
+    }
+
+    function renderScatter(list) {
+      const sat = list.filter((s) => s["Exam status"] === "Taken" && s.EXAMS != null && s.AVERAGE != null);
+      const absent = list.filter((s) => s["Exam status"] === "Absent").length;
+      scatterNote.textContent = absent
+        ? `${sat.length} students who sat the exam. ${absent} absent ${absent === 1 ? "student is" : "students are"} left off this chart. The line is where coursework and the exam match.`
+        : "Each dot is a student who sat the exam. The line is where coursework and the exam match.";
+      scatterEl.replaceChildren();
+      if (!sat.length) return;
+      const w = 640;
+      const h = 420;
+      const pad = { l: 46, r: 16, t: 12, b: 36 };
+      const xOf = (v) => pad.l + v / 100 * (w - pad.l - pad.r);
+      const yOf = (v) => pad.t + (100 - v) / 100 * (h - pad.t - pad.b);
+      const svg = svgEl("svg", { class: "chart", viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Coursework average against exam score" });
+      [0, 25, 50, 75, 100].forEach((tick) => {
+        svg.append(svgEl("line", { x1: xOf(tick), x2: xOf(tick), y1: pad.t, y2: h - pad.b, stroke: "#d5dee4" }));
+        svg.append(svgEl("line", { x1: pad.l, x2: w - pad.r, y1: yOf(tick), y2: yOf(tick), stroke: "#d5dee4" }));
+        const tx = svgEl("text", { x: xOf(tick) - 8, y: h - 14 });
+        tx.textContent = String(tick);
+        const ty = svgEl("text", { x: 4, y: yOf(tick) + 4 });
+        ty.textContent = String(tick);
+        svg.append(tx, ty);
+      });
+      svg.append(svgEl("line", {
+        x1: xOf(0), y1: yOf(0), x2: xOf(100), y2: yOf(100),
+        stroke: "#9d1c2a", "stroke-dasharray": "5 4", "stroke-width": "1.5"
+      }));
+      sat.forEach((s) => {
+        const c = svgEl("circle", {
+          cx: xOf(Number(s.AVERAGE)),
+          cy: yOf(Number(s.EXAMS)),
+          r: state.selected === s.No ? 7 : 5.5,
+          fill: GRADE_COLOR[s.GRADE] || "#5c6b7a",
+          stroke: state.selected === s.No ? "#1b2430" : "white",
+          "stroke-width": state.selected === s.No ? "2" : "1",
+          tabindex: "0",
+          role: "button"
+        });
+        c.dataset.no = String(s.No);
+        c.dataset.tip = `${s.Name} · coursework ${fmt(s.AVERAGE)} · exam ${fmt(s.EXAMS)} · ${s.GRADE}`;
+        c.setAttribute("aria-label", c.dataset.tip);
+        svg.append(c);
+      });
+      const xlab = svgEl("text", { x: w / 2 - 70, y: h - 2 });
+      xlab.textContent = "Coursework average";
+      svg.append(xlab);
+      scatterEl.append(svg);
+    }
+
+    function renderTable(list) {
+      const data = sorted(list);
+      listCount.textContent = `${data.length} ${data.length === 1 ? "student" : "students"}`;
+      emptyEl.hidden = data.length > 0;
+      rowsEl.replaceChildren();
+      document.querySelectorAll("[data-sort]").forEach((btn) => {
+        const on = btn.dataset.sort === state.sortKey;
+        btn.setAttribute("aria-sort", on ? (state.sortDir < 0 ? "descending" : "ascending") : "none");
+        const base = btn.dataset.label || btn.textContent.replace(/ [↑↓]$/, "");
+        btn.dataset.label = base;
+        btn.textContent = on ? `${base} ${state.sortDir < 0 ? "↓" : "↑"}` : base;
+      });
+      data.forEach((s) => {
+        const tr = document.createElement("tr");
+        tr.tabIndex = 0;
+        tr.dataset.no = String(s.No);
+        tr.setAttribute("aria-selected", state.selected === s.No ? "true" : "false");
+        const cells = [
+          s.Name,
+          fmt(s["Test 1 (100)"]),
+          fmt(s["Test 2 (100)"]),
+          s["Exam status"] === "Taken" ? fmt(s.EXAMS) : "Absent",
+          fmt(s.FINAL_SCORE),
+          s.GRADE || "—"
+        ];
+        cells.forEach((text) => {
+          const td = document.createElement("td");
+          td.textContent = text;
+          tr.append(td);
+        });
+        rowsEl.append(tr);
+      });
+    }
+
+    function svgEl(name, attrs) {
+      const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+      Object.entries(attrs).forEach(([k, v]) => {
+        if (k === "class") node.setAttribute("class", v);
+        else node.setAttribute(k, v);
+      });
+      return node;
+    }
+
+    function select(no) {
+      state.selected = no;
+      render();
+    }
+
+    function render() {
+      const list = view();
+      if (state.selected != null && !list.some((s) => s.No === state.selected)) state.selected = null;
+      clearBtn.hidden = !filtersOn();
+      renderSummary(list);
+      renderLadder(list);
+      renderMeans(list);
+      renderSpread(list);
+      renderScript();
+      renderScatter(list);
+      renderTable(list);
+    }
+
+    ladderEl.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-grade]");
+      if (!btn) return;
+      const g = btn.dataset.grade;
+      if (state.grades.has(g)) state.grades.delete(g);
+      else state.grades.add(g);
+      render();
+    });
+
+    document.querySelector(".status").addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-status]");
+      if (!btn) return;
+      state.status = btn.dataset.status;
+      document.querySelectorAll("[data-status]").forEach((el) => {
+        el.setAttribute("aria-pressed", el === btn ? "true" : "false");
+      });
+      render();
+    });
+
+    document.querySelector(".tabs").addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-spread]");
+      if (!btn) return;
+      state.spread = btn.dataset.spread;
+      render();
+    });
+
+    document.getElementById("search").addEventListener("input", (event) => {
+      state.query = event.target.value;
+      render();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      state.grades.clear();
+      state.status = "all";
+      state.query = "";
+      document.getElementById("search").value = "";
+      document.querySelectorAll("[data-status]").forEach((el) => {
+        el.setAttribute("aria-pressed", el.dataset.status === "all" ? "true" : "false");
+      });
+      render();
+    });
+
+    document.querySelector(".roster thead").addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-sort]");
+      if (!btn) return;
+      const key = btn.dataset.sort;
+      if (state.sortKey === key) state.sortDir *= -1;
+      else {
+        state.sortKey = key;
+        state.sortDir = key === "Name" || key === "GRADE" ? 1 : -1;
+      }
+      render();
+    });
+
+    function pickFromEvent(event) {
+      const node = event.target.closest("[data-no]");
+      if (!node) return;
+      select(Number(node.dataset.no));
+    }
+
+    spreadEl.addEventListener("click", pickFromEvent);
+    scatterEl.addEventListener("click", pickFromEvent);
+    rowsEl.addEventListener("click", pickFromEvent);
+    scriptEl.addEventListener("click", pickFromEvent);
+    spreadEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        pickFromEvent(event);
+      }
+    });
+    scatterEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        pickFromEvent(event);
+      }
+    });
+    rowsEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        pickFromEvent(event);
+      }
+    });
+
+    function showTip(event) {
+      const node = event.target.closest("[data-tip]");
+      if (!node) {
+        tip.style.display = "none";
+        return;
+      }
+      tip.textContent = node.dataset.tip;
+      tip.style.display = "block";
+      tip.style.left = `${event.clientX + 12}px`;
+      tip.style.top = `${event.clientY + 12}px`;
+    }
+
+    spreadEl.addEventListener("pointermove", showTip);
+    scatterEl.addEventListener("pointermove", showTip);
+    spreadEl.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+    scatterEl.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+
+    render();
+  </script>
+</body>
+</html>

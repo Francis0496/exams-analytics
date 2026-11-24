@@ -2,7 +2,7 @@
 
 Class exam results for one cohort: a Jupyter analysis and a browser dashboard you can put on a projector.
 
-The dashboard is `class_dashboard.html`. Double-click it, or open it in a browser, then press F11 for full screen. Search by name or ID, filter by grade or exam status, and click a student to open their marks. No server and no internet connection are required.
+The dashboard is `class_dashboard.html`. Double-click it, or open it in a browser, then press F11 for full screen. The same page is published with GitHub Pages. Search by name or ID, filter by grade or exam status, and click a student to open their marks. Opening the file on your computer needs no server and no internet connection.
 
 ## What is in this folder
 
